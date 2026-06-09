@@ -6,3 +6,4 @@ plugins/
 .aws/
 *.csv
 *.json
+docker-compose.yaml
