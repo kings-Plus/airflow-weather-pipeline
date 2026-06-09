@@ -7,3 +7,4 @@ plugins/
 *.csv
 *.json
 docker-compose.yaml
+docker-compose.yaml
