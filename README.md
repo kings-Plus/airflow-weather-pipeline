@@ -74,83 +74,6 @@ s3://weatheraiflowapipipeline-yml/
 location, temperature_celsius, temperature_fahrenheit,
 humidity, wind_speed, weather_code, time_of_record
 
-cat > ~/airflow/README.md << 'ENDOFREADME'
-# 🌤️ End-to-End Weather Data Pipeline
-
-> Apache Airflow · AWS EC2 · AWS S3 · Python · Docker · Open-Meteo API
-
-![Pipeline Status](https://img.shields.io/badge/pipeline-passing-brightgreen) ![Airflow](https://img.shields.io/badge/Airflow-2.9.3-017CEE?logo=apacheairflow) ![AWS](https://img.shields.io/badge/AWS-EC2%20%2B%20S3-FF9900?logo=amazonaws) ![Python](https://img.shields.io/badge/Python-3.12.4-3776AB?logo=python) ![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker)
-
----
-
-## Overview
-
-A production-grade weather data pipeline that extracts live hourly forecast data for New York City from the [Open-Meteo API](https://open-meteo.com/), transforms it into structured tabular data, and loads both raw JSON and processed CSV directly to AWS S3 — orchestrated end-to-end with Apache Airflow running in Docker on AWS EC2.
-
-**4 runs. 4 successes. 100% success rate.**
-
----
-
-## Architecture
-+-----------------------------------------------------------------+
-|  AWS EC2 c7i.large · Ubuntu 26.04 · Docker Compose             |
-|                                                                 |
-|  +----------------------------------------------------------+  |
-|  |  Apache Airflow 2.9.3 DAG: weather_api_pipeline          |  |
-|  |                                                          |  |
-|  |  Task 1: is_weather_api_ready (HttpSensor)               |  |
-|  |    Validates: HTTP 200 + hourly key + time array         |  |
-|  |              |                                           |  |
-|  |              v                                           |  |
-|  |  Task 2: fetch_weather (PythonOperator)                  |  |
-|  |    GET open-meteo.com/v1/forecast                        |  |
-|  |    Raw JSON → S3 Bronze layer                            |  |
-|  |    Full response → XCom                                  |  |
-|  |              |                                           |  |
-|  |              v                                           |  |
-|  |  Task 3: transform_load_weather_data (PythonOperator)    |  |
-|  |    XCom pull from fetch_weather                          |  |
-|  |    Unit conversion + UTC timestamps                      |  |
-|  |    Structured CSV → S3 Silver layer                      |  |
-|  +----------------------------------------------------------+  |
-+-----------------------------------------------------------------+
-|
-v
-+-------------------------------------+
-|  AWS S3: weatheraiflowapipipeline   |
-|  weather-data/                      |
-|  open_meteo_forecast_{ts}.json      | <- Bronze
-|  current_weather_data_NYC{ts}.csv   | <- Silver
-+-------------------------------------+
----
-
-## Tech Stack
-
-| Layer | Technology | Purpose |
-|-------|-----------|---------|
-| Orchestration | Apache Airflow 2.9.3 | DAG scheduling, task dependencies, retries |
-| Containerization | Docker Compose | Isolated runtime — webserver, scheduler, postgres |
-| Cloud Compute | AWS EC2 c7i.large | 2 vCPU / 4GB RAM Ubuntu 26.04 host |
-| Cloud Storage | AWS S3 + boto3 | Raw JSON and transformed CSV landing zone |
-| Database | PostgreSQL 13 | Airflow metadata and task state |
-| Language | Python 3.12.4 | DAG logic, transformation, S3 upload |
-| Data Processing | pandas | DataFrame construction and CSV serialisation |
-| API Source | Open-Meteo API | Free forecast API — no key, no auth required |
-| HTTP Validation | HttpSensor | Pre-fetch API health check with body validation |
-
----
-
-## Pipeline Output
-
-### S3 Folder Structure
-s3://weatheraiflowapipipeline-yml/
-└── weather-data/
-├── open_meteo_forecast_20260607032805.json     <- Bronze
-└── current_weather_data_NYC20260607032810.csv  <- Silver
-### Transformed CSV Fields
-location, temperature_celsius, temperature_fahrenheit,
-humidity, wind_speed, weather_code, time_of_record
-
 ---
 
 ## DAG Configuration
@@ -279,7 +202,9 @@ airflow dags trigger weather_api_pipeline
 **George Alwanga** — Data Engineer & Business Analyst
 
 - Snowflake certified · dbt Cloud certified
-- 6+ years across Airflow, AWS, Python, Tableau, SQL Server
-- US Navy Reserve Hospital Corpsman (E-5)
+- 6+ years Industry translating complex data into executive-ready insights that drive measurable business outcomes. 
+- Core Stack: Python, SQL, dbt, Snowflake, Databricks, AWS, and Tableau—powering a production-grade modern analytics engineering 
+- architecture
+- Ochestration tools Airflow & Prefect
 
 📧 alwangageorgia@gmail.com
