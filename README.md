@@ -14,37 +14,45 @@ A production-grade weather data pipeline that extracts live hourly forecast data
 
 ---
 
-## Architecture
-+-----------------------------------------------------------------+
-|  AWS EC2 c7i.large · Ubuntu 26.04 · Docker Compose             |
-|                                                                 |
-|  +----------------------------------------------------------+  |
-|  |  Apache Airflow 2.9.3 DAG: weather_api_pipeline          |  |
-|  |                                                          |  |
-|  |  Task 1: is_weather_api_ready (HttpSensor)               |  |
-|  |    Validates: HTTP 200 + hourly key + time array         |  |
-|  |              |                                           |  |
-|  |              v                                           |  |
-|  |  Task 2: fetch_weather (PythonOperator)                  |  |
-|  |    GET open-meteo.com/v1/forecast                        |  |
-|  |    Raw JSON → S3 Bronze layer                            |  |
-|  |    Full response → XCom                                  |  |
-|  |              |                                           |  |
-|  |              v                                           |  |
-|  |  Task 3: transform_load_weather_data (PythonOperator)    |  |
-|  |    XCom pull from fetch_weather                          |  |
-|  |    Unit conversion + UTC timestamps                      |  |
-|  |    Structured CSV → S3 Silver layer                      |  |
-|  +----------------------------------------------------------+  |
-+-----------------------------------------------------------------+
-|
-v
-+-------------------------------------+
-|  AWS S3: weatheraiflowapipipeline   |
-|  weather-data/                      |
-|  open_meteo_forecast_{ts}.json      | <- Bronze
-|  current_weather_data_NYC{ts}.csv   | <- Silver
-+-------------------------------------+
+---
+
+### Option 2: Mermaid.js Diagram (Best for a modern, visual Look)
+GitHub automatically renders this into a sleek, graphical flowchart. Copy and paste this directly into your README:
+
+```markdown
+### System Architecture
+
+```mermaid
+graph TD
+    %% Styling
+    classDef host fill:#f9f9f9,stroke:#333,stroke-width:2px;
+    classDef airflow fill:#e1f5fe,stroke:#0288d1,stroke-width:2px;
+    classDef s3 fill:#fff3e0,stroke:#f57c00,stroke-width:2px;
+
+    subgraph Host [AWS EC2 c7i.large / Ubuntu 26.04 / Docker Compose]
+        subgraph Airflow [Apache Airflow 2.9.3 DAG: weather_api_pipeline]
+            T1[<b>Task 1: is_weather_api_ready</b><br>HttpSensor<br><i>Validates: HTTP 200 + payload</i>]
+            T2[<b>Task 2: fetch_weather</b><br>PythonOperator<br><i>GET open-meteo.com → XCom</i>]
+            T3[<b>Task 3: transform_load_weather_data</b><br>PythonOperator<br><i>Unit conversion + UTC transform</i>]
+            
+            T1 --> T2
+            T2 -->|XCom Pull| T3
+        end
+    end
+
+    subgraph S3 [AWS S3: weatheraiflowapipipeline]
+        B[<b>Bronze Layer</b><br>open_meteo_forecast_ts.json]
+        S[<b>Silver Layer</b><br>current_weather_data_NYCts.csv]
+    end
+
+    %% Pipeline Data Flows
+    T2 -.->|Raw JSON| B
+    T3 -.->|Structured CSV| S
+
+    %% Apply Styles
+    class Host host;
+    class T1,T2,T3 airflow;
+    class B,S s3;
 ---
 
 ## Tech Stack
